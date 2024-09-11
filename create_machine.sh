@@ -12,11 +12,11 @@ ZONE_LETTER=$1
 # Set the machine number to the second argument if provided, or default to 1
 MACHINE_NUMBER=${2:-1}
 
-# Define the zone using the zone letter
+# Define the zone using the zone letterc
 ZONE="us-central1-$ZONE_LETTER"
 
 # Define the machine name using the machine number
-MACHINE_NAME="gpu-40a100-c1b-$MACHINE_NUMBER"
+MACHINE_NAME="gpu-40a100-c1$ZONE_LETTER-$MACHINE_NUMBER"
 
 # Run the gcloud compute instance create command
 gcloud compute instances create $MACHINE_NAME \
