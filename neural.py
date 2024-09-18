@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 
 import pandas as pd
-import xarray
+import xarray as xr 
 import time
 import os, argparse
 
@@ -28,7 +28,7 @@ def load_checkpoint(model_path):
 def load_initial_conditions(model, modeldate, base_path):
     init_path = f"{base_path}{modeldate.strftime('%Y%m%d%H')}"
 
-    init_ds = xarray.open_zarr(init_path, chunks=None)
+    init_ds = xr.open_zarr(init_path, chunks=None)
     init_ds = init_ds.sortby('level')
 
     ic_grid = spherical_harmonic.Grid(
@@ -57,19 +57,24 @@ def run_model(modeldate, model, base_path, output_path):
     # initialize model state
     inputs = model.inputs_from_xarray(ic_ds.isel(time=0))
     input_forcings = model.forcings_from_xarray(ic_ds.isel(time=0))
-    rng_key = jax.random.key(42)  # optional for deterministic models
 
-    initial_state = model.encode(inputs, input_forcings, rng_key)
 
     # use persistence for forcing variables (SST and sea ice cover)
     all_forcings = model.forcings_from_xarray(ic_ds.head(time=1))
 
-    # make forecast
-    final_state, predictions = model.unroll(initial_state, all_forcings,
-                                            steps=outer_steps, timedelta=timedelta, start_with_input=True)
-    predictions_ds = model.data_to_xarray(predictions, times=times)
+    predictions_ds_lst = list()
+    for ii in range(1,10):
+        rng_key = jax.random.key(42)  
+        initial_state = model.encode(inputs, input_forcings, rng_key)
+        # make forecast
+        final_state, predictions = model.unroll(initial_state, all_forcings,
+                                                steps=outer_steps, timedelta=timedelta, start_with_input=True)
+        
+        predictions_ds_lst.append(model.data_to_xarray(predictions, times=times))
 
-    predictions_ds.to_netcdf(os.path.expanduser(f"{output_path}{modeldate.strftime('%Y%m%d%H')}.nc"))
+    predictions_ds = xr.concat(predictions_ds_lst, dim='path_ii')
+    mean_ds = predictions_ds.mean(dim='path_ii')
+    mean_ds.to_netcdf(os.path.expanduser(f"{output_path}{modeldate.strftime('%Y%m%d%H')}.nc"))
 
     end_time = time.time()  # Record the end time
     execution_time = end_time - start_time  # Calculate the execution time
