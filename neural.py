@@ -64,7 +64,7 @@ def run_model(modeldate, model, base_path, output_path):
 
     predictions_ds_lst = list()
     for ii in range(1,10):
-        rng_key = jax.random.key(42)  
+        rng_key = jax.random.key(ii)  
         initial_state = model.encode(inputs, input_forcings, rng_key)
         # make forecast
         final_state, predictions = model.unroll(initial_state, all_forcings,
