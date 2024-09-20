@@ -63,7 +63,7 @@ def run_model(modeldate, model, base_path, output_path):
     all_forcings = model.forcings_from_xarray(ic_ds.head(time=1))
 
     predictions_ds_lst = list()
-    for ii in range(1,10):
+    for ii in range(1,11):
         rng_key = jax.random.key(ii)  
         initial_state = model.encode(inputs, input_forcings, rng_key)
         # make forecast
