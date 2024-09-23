@@ -1,7 +1,7 @@
 #!/bin/bash
 
 input_dir="/mnt/disks/era5land/eurens/raw"
-output_dir="/mnt/disks/era5land/eurens/"
+output_dir="/mnt/disks/era5land/eurens"
 
 
 echo "write \"$output_dir/[shortName]/[level]/[date][time].grib\";" > split.filter
