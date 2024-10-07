@@ -62,13 +62,14 @@ def run_model(modeldate, model, base_path, output_path):
     # use persistence for forcing variables (SST and sea ice cover)
     all_forcings = model.forcings_from_xarray(ic_ds.head(time=1))
 
+    
     predictions_ds_lst = list()
     for ii in range(1,11):
         rng_key = jax.random.key(ii)  
         initial_state = model.encode(inputs, input_forcings, rng_key)
         # make forecast
         final_state, predictions = model.unroll(initial_state, all_forcings,
-                                                steps=outer_steps, timedelta=timedelta, start_with_input=True)
+                                                steps=outer_steps, timedelta=timedelta, start_with_input=True))
         
         predictions_ds_lst.append(model.data_to_xarray(predictions, times=times))
 
